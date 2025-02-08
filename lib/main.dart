@@ -1,96 +1,149 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'orders_page.dart'; // Импортируем страницу заказов
 
 void main() {
-  runApp(MyApp());
+  runApp(MaterialApp(
+    theme: ThemeData(primarySwatch: Colors.blue), 
+    home: ProductsPage(roomId: 101),
+    debugShowCheckedModeBanner: false,
+  ));
 }
 
-class MyApp extends StatelessWidget {
+class ProductsPage extends StatefulWidget {
+  final int roomId;
+
+  ProductsPage({required this.roomId});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Order App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: OrderForm(),
-      debugShowCheckedModeBanner: false,
-    );
+  _ProductsPageState createState() => _ProductsPageState();
+}
+
+class _ProductsPageState extends State<ProductsPage> {
+  List products = [];
+  Map<int, int> quantities = {}; // Храним количество для каждого товара
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
   }
-}
 
-class OrderForm extends StatefulWidget {
-  @override
-  _OrderFormState createState() => _OrderFormState();
-}
+  Future<void> fetchProducts() async {
+    final response = await http.get(Uri.parse(
+        'https://e02d-2001-4650-24fd-0-c482-d577-2da4-9e6e.ngrok-free.app/products'));
 
-class _OrderFormState extends State<OrderForm> {
-  final _productNameController = TextEditingController();
-  final _quantityController = TextEditingController();
-  String _responseMessage = "";
-
-  Future<void> _submitOrder() async {
-    final String productName = _productNameController.text;
-    final int quantity = int.tryParse(_quantityController.text) ?? 0;
-
-    if (productName.isEmpty || quantity <= 0) {
+    if (response.statusCode == 200) {
+      List data = json.decode(response.body);
       setState(() {
-        _responseMessage = "Please provide valid input.";
+        products = data;
+        for (var product in data) {
+          quantities[product['id']] = 1;
+        }
       });
-      return;
+    } else {
+      print('Ошибка загрузки продуктов');
     }
+  }
 
-    final url = 'https://bfb1-185-161-57-225.ngrok-free.app/order'; 
+  Future<void> placeOrder(int productId) async {
     final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
+      Uri.parse('https://e02d-2001-4650-24fd-0-c482-d577-2da4-9e6e.ngrok-free.app/orders'),
+      headers: {"Content-Type": "application/json"},
       body: json.encode({
-        'productName': productName,
-        'quantity': quantity,
+        "room_id": widget.roomId, // Передаём room_id вместо user_id
+        "product_id": productId,
+        "quantity": quantities[productId]
       }),
     );
 
     if (response.statusCode == 200) {
-      setState(() {
-        _responseMessage = "Order successfully created!";
-      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Order is succesful!')));
     } else {
-      setState(() {
-        _responseMessage = "Error creating order.";
-      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Ошибка заказа')));
     }
+  }
+
+  void _increaseQuantity(int productId) {
+    setState(() {
+      quantities[productId] = (quantities[productId] ?? 1) + 1;
+    });
+  }
+
+  void _decreaseQuantity(int productId) {
+    setState(() {
+      if (quantities[productId]! > 1) {
+        quantities[productId] = quantities[productId]! - 1;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Form'),
+        title: Text("Menu"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OrdersPage(roomId: widget.roomId),
+                ),
+              );
+            },
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _productNameController,
-              decoration: InputDecoration(labelText: 'Product Name'),
+      body: products.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                var product = products[index];
+                int productId = product['id'];
+
+                return Card(
+                  margin: EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      Image.network(product['image_url'],
+                          height: 150, fit: BoxFit.cover),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(product['name'],
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.remove),
+                            onPressed: () => _decreaseQuantity(productId),
+                          ),
+                          Text('${quantities[productId]}',
+                              style: TextStyle(fontSize: 18)),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () => _increaseQuantity(productId),
+                          ),
+                        ],
+                      ),
+                      ElevatedButton(
+                        onPressed: () => placeOrder(productId),
+                        child: Text("Submit"),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-            TextField(
-              controller: _quantityController,
-              decoration: InputDecoration(labelText: 'Quantity'),
-              keyboardType: TextInputType.number,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submitOrder,
-              child: Text('Submit Order'),
-            ),
-            SizedBox(height: 20),
-            Text(_responseMessage),
-          ],
-        ),
-      ),
     );
   }
 }
