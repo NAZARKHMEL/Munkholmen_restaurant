@@ -22,7 +22,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
   Future<void> fetchOrders() async {
     final response = await http.get(Uri.parse(
-        'https://7502-2001-4650-24fd-0-497c-c8a9-476d-232b.ngrok-free.app/orders/${widget.roomId}')); // Подставляем roomId в URL
+        'https://4988-185-161-57-228.ngrok-free.app/orders/${widget.roomId}')); // Подставляем roomId в URL
 
     if (response.statusCode == 200) {
       setState(() {
@@ -35,7 +35,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
   Future<void> confirmOrder(int orderId) async {
     final response = await http.post(
-      Uri.parse('https://7502-2001-4650-24fd-0-497c-c8a9-476d-232b.ngrok-free.app/orders/confirm/$orderId'),
+      Uri.parse('https://4988-185-161-57-228.ngrok-free.app/confirm/$orderId'),
     );
 
     if (response.statusCode == 200) {
