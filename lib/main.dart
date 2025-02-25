@@ -52,7 +52,7 @@ class _ProductsPageState extends State<ProductsPage> {
       Uri.parse('https://4988-185-161-57-228.ngrok-free.app/orders'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({
-        "room_id": widget.roomId, // Передаём room_id вместо user_id
+        "room_id": widget.roomId, 
         "product_id": productId,
         "quantity": quantities[productId]
       }),

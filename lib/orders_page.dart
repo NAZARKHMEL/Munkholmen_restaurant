@@ -67,7 +67,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     trailing: order['confirmed'] == 1
                         ? Icon(Icons.check_circle, color: Colors.green)
                         : ElevatedButton(
-                            onPressed: () => confirmOrder(order['id']),
+                            onPressed: () => confirmOrder(order['product_id']),
                             child: Text("Confirm"),
                           ),
                   ),
