@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'orders_page.dart'; // Импортируем страницу заказов
+import 'orders_page.dart'; 
 
 void main() {
   runApp(MaterialApp(
@@ -32,7 +32,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
   Future<void> fetchProducts() async {
     final response = await http.get(Uri.parse(
-        'https://4988-185-161-57-228.ngrok-free.app/products'));
+        'https://51c5-2001-4650-24fd-0-57c-262b-d7ac-e591.ngrok-free.app/products'));
 
     if (response.statusCode == 200) {
       List data = json.decode(response.body);
@@ -49,7 +49,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
   Future<void> placeOrder(int productId) async {
     final response = await http.post(
-      Uri.parse('https://4988-185-161-57-228.ngrok-free.app/orders'),
+      Uri.parse('https://51c5-2001-4650-24fd-0-57c-262b-d7ac-e591.ngrok-free.app/orders'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({
         "room_id": widget.roomId, 
