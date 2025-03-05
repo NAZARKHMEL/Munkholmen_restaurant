@@ -32,7 +32,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
   Future<void> fetchProducts() async {
     final response = await http.get(Uri.parse(
-        'https://193f-2a01-563-19f-d500-81bc-59ae-48c9-6c52.ngrok-free.app/products'));
+        'https://fac6-46-230-134-254.ngrok-free.app/products'));
 
     if (response.statusCode == 200) {
       List data = json.decode(response.body);
@@ -49,7 +49,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
   Future<void> placeOrder(int productId) async {
     final response = await http.post(
-      Uri.parse('https://193f-2a01-563-19f-d500-81bc-59ae-48c9-6c52.ngrok-free.app/orders'),
+      Uri.parse('https://fac6-46-230-134-254.ngrok-free.app/orders'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({
         "room_id": widget.roomId, 
