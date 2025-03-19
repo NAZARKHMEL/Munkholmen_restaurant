@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 class OrdersPage extends StatefulWidget {
   final int roomId;
@@ -20,11 +22,28 @@ class _OrdersPageState extends State<OrdersPage> {
     fetchOrders();
   }
 
+  Future<String?> getDeviceId() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.id;
+    } else if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      return iosInfo.identifierForVendor;
+    }
+    return null;
+  }
+
   Future<void> fetchOrders() async {
-    final response = await http.get(Uri.parse(
-        'https://3e6b-185-161-57-229.ngrok-free.app/orders/${widget.roomId}'),      
-        headers: {"X-Client-Type": "mobile"}
-    );
+    String? macAddress = await getDeviceId();
+    final response = await http.get(
+        Uri.parse(
+            'https://3e6b-185-161-57-229.ngrok-free.app/orders/${widget.roomId}'),
+        headers: {
+          "X-Client-Type": "mobile",
+          if (macAddress != null) "X-Device-ID": macAddress
+        });
 
     if (response.statusCode == 200) {
       setState(() {
@@ -36,10 +55,14 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   Future<void> confirmOrder(int orderId) async {
+    String? macAddress = await getDeviceId();
     final response = await http.post(
-      Uri.parse('https://3e6b-185-161-57-229.ngrok-free.app/confirm/$orderId'),
-      headers: {"X-Client-Type": "mobile"}
-    );
+        Uri.parse(
+            'https://3e6b-185-161-57-229.ngrok-free.app/confirm/$orderId'),
+        headers: {
+          "X-Client-Type": "mobile",
+          if (macAddress != null) "X-Device-ID": macAddress
+        });
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context)

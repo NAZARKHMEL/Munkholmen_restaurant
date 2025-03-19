@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'orders_page.dart'; 
+import 'orders_page.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 void main() {
   runApp(MaterialApp(
-    theme: ThemeData(primarySwatch: Colors.blue), 
+    theme: ThemeData(primarySwatch: Colors.blue),
     home: ProductsPage(roomId: 101),
     debugShowCheckedModeBanner: false,
   ));
@@ -22,7 +24,7 @@ class ProductsPage extends StatefulWidget {
 
 class _ProductsPageState extends State<ProductsPage> {
   List products = [];
-  Map<int, int> quantities = {}; // Храним количество для каждого товара
+  Map<int, int> quantities = {}; 
 
   @override
   void initState() {
@@ -30,11 +32,28 @@ class _ProductsPageState extends State<ProductsPage> {
     fetchProducts();
   }
 
+  Future<String?> getDeviceId() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.id;
+    } else if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      return iosInfo.identifierForVendor;
+    }
+    return null;
+  }
+
   Future<void> fetchProducts() async {
-    final response = await http.get(Uri.parse(
-        'https://3e6b-185-161-57-229.ngrok-free.app/products'),      
-        headers: {"X-Client-Type": "mobile"}
-    );
+    String? macAddress = await getDeviceId();
+    print(macAddress);
+    final response = await http.get(
+        Uri.parse('https://3e6b-185-161-57-229.ngrok-free.app/products'),
+        headers: {
+          "X-Client-Type": "mobile",
+          if (macAddress != null) "X-Device-ID": macAddress
+        });
 
     if (response.statusCode == 200) {
       List data = json.decode(response.body);
@@ -50,11 +69,16 @@ class _ProductsPageState extends State<ProductsPage> {
   }
 
   Future<void> placeOrder(int productId) async {
+    String? macAddress = await getDeviceId();
     final response = await http.post(
       Uri.parse('https://3e6b-185-161-57-229.ngrok-free.app/orders'),
-      headers: {"Content-Type": "application/json", "X-Client-Type": "mobile"},
+      headers: {
+        "Content-Type": "application/json",
+        "X-Client-Type": "mobile",
+        if (macAddress != null) "X-Device-ID": macAddress
+      },
       body: json.encode({
-        "room_id": widget.roomId, 
+        "room_id": widget.roomId,
         "product_id": productId,
         "quantity": quantities[productId]
       }),
