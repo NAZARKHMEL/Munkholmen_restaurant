@@ -49,7 +49,7 @@ class _ProductsPageState extends State<ProductsPage> {
     String? macAddress = await getDeviceId();
     print(macAddress);
     final response = await http.get(
-        Uri.parse('https://3e6b-185-161-57-229.ngrok-free.app/products'),
+        Uri.parse('https://34c7-185-161-57-225.ngrok-free.app/products'),
         headers: {
           "X-Client-Type": "mobile",
           if (macAddress != null) "X-Device-ID": macAddress
@@ -71,7 +71,7 @@ class _ProductsPageState extends State<ProductsPage> {
   Future<void> placeOrder(int productId) async {
     String? macAddress = await getDeviceId();
     final response = await http.post(
-      Uri.parse('https://3e6b-185-161-57-229.ngrok-free.app/orders'),
+      Uri.parse('https://34c7-185-161-57-225.ngrok-free.app'),
       headers: {
         "Content-Type": "application/json",
         "X-Client-Type": "mobile",
