@@ -39,7 +39,7 @@ class _OrdersPageState extends State<OrdersPage> {
     String? macAddress = await getDeviceId();
     final response = await http.get(
         Uri.parse(
-            'https://34c7-185-161-57-225.ngrok-free.app/orders/${widget.roomId}'),
+            'https://9c60-2a05-9cc4-79-c85-3c8d-812d-a1cd-cfa4.ngrok-free.app/orders/${widget.roomId}'),
         headers: {
           "X-Client-Type": "mobile",
           if (macAddress != null) "X-Device-ID": macAddress
@@ -58,7 +58,7 @@ class _OrdersPageState extends State<OrdersPage> {
     String? macAddress = await getDeviceId();
     final response = await http.post(
         Uri.parse(
-            'https://34c7-185-161-57-225.ngrok-free.app/confirm/$orderId'),
+            'https://9c60-2a05-9cc4-79-c85-3c8d-812d-a1cd-cfa4.ngrok-free.app/confirm/$orderId'),
         headers: {
           "X-Client-Type": "mobile",
           if (macAddress != null) "X-Device-ID": macAddress
